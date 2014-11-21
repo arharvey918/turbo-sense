@@ -8,8 +8,8 @@ Motivation and Goal
 
 The goal of the sensor package module is to provide obstacle detection. Ideally, obstacles around 360 degrees in three dimensions should be accurately detected and reported to the control module. There are at least two closely related tasks that have to be completed in this module:
 
-    selection, characterization and modelling of the individual sensors (potentially only one, but likely multiple ones are required)
-    fusion of the information from individual sensors in three dimensions
+- Selection, characterization and modelling of the individual sensors (potentially only one, but likely multiple ones are required)
+- Fusion of the information from individual sensors in three dimensions
 
 The fused information has to be then sent via some interface to the control module. The interface can be as simple as providing a hardware design with a software "driver" code, or as complex as defining a data format to be sent over some standardized bus.
 
