@@ -46,6 +46,9 @@ void convertToPrism(int *elements, int *prism) {
   prism[5] = elements[9];
 }
 
+/**
+  * Prints the prism integers to standard output.
+  */
 void printPrism(int *prism) {
   printf("%d\t%d\t%d\t%d\t%d\t%d\n", prism[0], prism[1], prism[2], prism[3],
          prism[4], prism[5]);

@@ -21,8 +21,10 @@
   */
 
 #include "pipe.h"
-#include "constants.h"
 
+/**
+  * Duplicate of the strdup function available in some libraries.
+  */
 char *strdup2(const char *str) {
   int n = strlen(str) + 1;
   char *dup = malloc(n);

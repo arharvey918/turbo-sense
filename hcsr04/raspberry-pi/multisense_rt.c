@@ -99,10 +99,13 @@ void readConfig(struct Config *conf) {
 
 /**
   * Called when the GPIO interrupt is triggered.
-  *
+  * gpio is the Broadcom number of the GPIO pin.
+  * level is the level that the pin changed to.
+  * tick is the time tick that the event occurred at.
   */
 void interrupt_routine(int gpio, int level, uint32_t tick) {
-  if (level == 0) {             /* falling edge */
+  // Falling edge
+  if (level == 0) {
     if (gpio == ECHO) {
       end[0] = tick;
     } else if (gpio == ECHO1) {
@@ -124,7 +127,10 @@ void interrupt_routine(int gpio, int level, uint32_t tick) {
     } else if (gpio == ECHO9) {
       end[9] = tick;
     }
-  } else {                      /* rising edge */
+  } 
+
+  // Rising edge
+  else {
     if (gpio == ECHO) {
       start[0] = tick;
     } else if (gpio == ECHO1) {
@@ -156,7 +162,9 @@ void setup() {
   // Set up the library to use the Broadcom GPIO numbers
   if (gpioInitialise() < 0) {
     printf("Library initialization failed.");
+    exit(1);
   }
+
   // Set up the GPIO pins for I/O mode
   gpioSetMode(TRIG, PI_OUTPUT); // Set trigger as output
   gpioSetMode(ECHO, PI_INPUT);  // Set echo pins as input   
@@ -185,8 +193,10 @@ void setup() {
   // TRIG pin must start LOW
   if (gpioWrite(TRIG, 0) == 1) {
     printf("Could not set TRIGGER pin to low!\n");
+    exit(1);
   }
-  // Delay for setup
+
+  // Let all the sensors and GPIO pins settle
   gpioDelay(100000);
 }
 
@@ -198,9 +208,13 @@ void sendPulse() {
   // Send trigger pulse
   gpioTrigger(TRIG, 10, 1);
 
-  //Wait for echo end
+  // Record the time we sent the pulse for timeout purposes
   uint32_t thisStart = gpioTick();
+
+  // Record the moment past the start that the sensor times out (IF it times out)
   maxedOut = 0;
+
+  // Set the end time for each sensor to 0
   end[0] = 0;
   end[1] = 0;
   end[2] = 0;
@@ -212,7 +226,7 @@ void sendPulse() {
   end[8] = 0;
   end[9] = 0;
 
-  // Wait for 23000 us
+  // Wait for 23000 us.  If we don't get a response back from any one of the sensors within that time, continue.
   while ((end[0] == 0 || end[1] == 0 || end[2] == 0 || end[3] == 0
           || end[4] == 0 || end[5] == 0 || end[6] == 0 || end[7] == 0
           || end[8] == 0 || end[9] == 0)
@@ -226,13 +240,15 @@ void sendPulse() {
   * Converts microseconds returned from the sensor to centimeters.
   */
 int getCM(int sensor) {
+  // If the end time for the sensor is 0 or the end time is less than the start time, assume the sensor timed out and return the maximum distance.
   if (end[sensor] == 0 || end[sensor] < start[sensor]) {
     return MAX_RANGE;
   }
 
+  // Calculate the time elapsed between the start and end.
   uint32_t travelTime = end[sensor] - start[sensor];
 
-  //Get distance in cm
+  // Convert the distance to centimeters
   int distance = travelTime / 58;
 
   return distance;
@@ -285,7 +301,7 @@ int main(int argc, char *argv[]) {
   struct PipeInfo *pipeInfo = malloc(sizeof *pipeInfo);
   pipeInfo->myfifo = strdup2(PIPE_NAME);
 
-  // Set up the semaphores
+  // Set up the semaphores for the pipe
   sem_unlink(SENSOR_SEM);
   sem_unlink(PIPE_IN_SEM);
   sem_t *sensorSem = sem_open(SENSOR_SEM, O_CREAT | O_EXCL, 0666, 1);
@@ -298,7 +314,7 @@ int main(int argc, char *argv[]) {
   // Sets up the GPIO pins
   setup();
 
-  // Get the jitters out
+  // Get the jitters out (not sure if this actually helps the results or not)
   sendPulse();
 
   // Set the system start time
@@ -328,7 +344,7 @@ int main(int argc, char *argv[]) {
     // Print current time
     printf("%zu\t", (gpioTick() - sysStart) / 1000);
 
-    // Print CMs
+    // Calculate and print the distances
     for (int k = 0; k < MAX_SENSORS; k++) {
       if (conf->active[k]) {
         cms[k] = getCM(k);
@@ -355,11 +371,15 @@ int main(int argc, char *argv[]) {
 
   }
 
-  int terminatingPipe[6] = { -1, -1, -1, -1, -1, -1 };
-  pipe_output(pipeInfo, terminatingPipe);
-  sem_post(pipeSem);
-  gpioDelay(10000);
+  // Tell the reading end of the pipe we're done
+  if (conf->pipe > 0) {
+    int terminatingPipe[6] = { -1, -1, -1, -1, -1, -1 };
+    pipe_output(pipeInfo, terminatingPipe);
+    sem_post(pipeSem);
+    gpioDelay(10000);
+  }
 
+  // Close and unlink the semaphores
   sem_close(pipeSem);
   sem_unlink(SENSOR_SEM);
   sem_close(sensorSem);
@@ -381,6 +401,7 @@ int main(int argc, char *argv[]) {
   if (conf->noiseFilter == NF_STD || conf->noiseFilter == NF_ALL) {
     free(stdevElimThreshold);
   }
+
   // Reset the GPIO peripherals
   gpioTerminate();
 

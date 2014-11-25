@@ -31,13 +31,17 @@
 #include <errno.h>
 #include "constants.h"
 
+// The file descriptor
 int fd;
+
+// Set to 1 if we are writing to a file
 short useFile = 0;
 
 /**
   * Opens the named pipe (FIFO) for input.
   */
 void open_pipe(char *myfifo) {
+  // Wait for the pipe to be created
   printf("Waiting for pipe creation... ");
   fflush(stdout);
   while (fd == -1) {
@@ -50,19 +54,24 @@ void open_pipe(char *myfifo) {
   printf("Pipe opened.\n");
 }
 
+/** Closes the pipe */
 void close_pipe() {
   close(fd);
 }
 
+/** The main program logic */
 int main(int argc, char *argv[]) {
 
+  // If the -p flag is specified, write the file indicated after the -p
   FILE *fdOut = NULL;
   if (argc == 3 && !strcmp(argv[1], "-p")) {
     fdOut = fopen(argv[2], "w");
     if (fdOut > 0) {
       useFile = 1;
+      fprintf(fdOut, "F\tB\tR\tL\tU\tD\n");
     }
   }
+
   // Open the pipe
   fd = -1;
   char *myfifo = PIPE_NAME;
@@ -80,14 +89,16 @@ int main(int argc, char *argv[]) {
   sem_t *pipeSem = sem_open(PIPE_IN_SEM, 0);
   sem_t *sensorSem = sem_open(SENSOR_SEM, 0);
 
+  // If we can't open the semaphore, exite the program
   if (pipeSem == SEM_FAILED || sensorSem == SEM_FAILED) {
     printf("Error : %s\n", strerror(errno));
-    exit(0);
+    exit(1);
   }
   printf("Opened semaphores\n");
 
   // Output everything in the pipe in sets of six integers
   while (1) {
+    // Wait for the sensor program to tell us that there's input available to read
     sem_wait(pipeSem);
     len = read(fd, &tmp, sizeof(int));
     if (len > 0) {
@@ -114,6 +125,7 @@ int main(int argc, char *argv[]) {
              array[3], array[4], array[5]);
 
     }
+    // Tell the sensor program we're done reading
     sem_post(sensorSem);
 
   }

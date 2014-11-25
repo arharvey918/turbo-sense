@@ -23,28 +23,39 @@
 #include "filters.h"
 
 /**
- * Calculates an exponential moving average
+ * Calculates an exponential moving average given a sensor and the current value.
  */
 int ema(int sensor, int current) {
+  // Define static variables
   static float alpha = 0.3;
   static float lastema[MAX_SENSORS];
   static short initialized[MAX_SENSORS] = { 0 };
   float ema;
 
-  // If initialized is 0, then we must be on the first observation.
+  // If initialized is set to 0, then we must be on the first observation.
+  // Set the returned ema value to the current value and set the initialized flag to true.
   if (initialized[sensor] == 0) {
     ema = current;
     initialized[sensor] = 1;
-  } else {
+  }
+  
+  // If the initialized flag has already been set, then there was a prior value.
+  // We can now use the recursive formula to calculate the EMA. 
+  else {
     ema = (alpha * current + (1 - alpha) * lastema[sensor]);
   }
+
+  // Set the previous value to the current EMA calculation to be used on the next round.
   lastema[sensor] = ema;
 
+  // Return the EMA as an integer (will truncate decimal)
   return (int)ema;
 }
 
 /**
-  * Recursive method to sort a list.
+  * Used to partition a list using the concept of quick-sort.
+  * This method was modified from the following source:
+  * http://discuss.codechef.com/questions/1489/find-median-in-an-unsorted-array-without-sorting-it 
   */
 int partitions(int low, int high, int *values) {
   int p = low, r = high, x = values[r], i = p - 1;
@@ -63,11 +74,14 @@ int partitions(int low, int high, int *values) {
 }
 
 /**
-  * Finds the kth smallest number in an unsorted list.
+  * Finds the kth smallest number in an unsorted list using the selection algorithm.
+  * This method was modified form the following source:
+  * http://discuss.codechef.com/questions/1489/find-median-in-an-unsorted-array-without-sorting-it
   */
 int selection_algorithm(int left, int right, int kth, int *values) {
   for (;;) {
-    int pivotIndex = partitions(left, right, values); //Pivot Between Left and Right
+    // Pivot between left and right
+    int pivotIndex = partitions(left, right, values);
     int len = pivotIndex - left + 1;
 
     if (kth == len) {
@@ -82,18 +96,23 @@ int selection_algorithm(int left, int right, int kth, int *values) {
 }
 
 /**
-  * Moving median filter.
+  * Calculates the moving median of a set of numbers given the sensor, current value, and list of past values.
   */
 int moving_median(int sensor, int current, int *values) {
 
+  // Set up the static variables.  The 'count' array tells us how many past values have been stored.  'dupArray' is used to store the data that gets passed to the selection algorithm.  The selection algorithm has the potential to reorder the list, and we need the list to maintain the same order so we know which values are old and can be discarded from the moving filter.
   static short count[MAX_SENSORS] = { 0 };
   static int dupArray[MEDIAN_READINGS] = { 0 };
 
+  // If there are less readings than the number we need to take a median, return the current value and store it in the array.
   if (count[sensor] < MEDIAN_READINGS) {
     values[count[sensor]] = current;
     count[sensor]++;
     return current;
-  } else {
+  }
+
+  // If the array containing the past readings is full, shift everything left (pushing the first observation out) and put the current reading in the end position of the array.  Take the median of this and return it.
+  else {
     if (count[sensor] != MEDIAN_READINGS - 1) {
       // Shift everything one position left
       for (int i = 0; i < (MEDIAN_READINGS - 1); i++) {
@@ -109,17 +128,19 @@ int moving_median(int sensor, int current, int *values) {
       dupArray[i] = values[i];
     }
 
+    // Return the median of the values
     return selection_algorithm(0, MEDIAN_READINGS - 1, 3, dupArray);
   }
 
+  // We should never get to this point.
   return 0;
 }
 
 /**
-  * The standard deviation filter.
+  * The standard deviation filter performs a single-point based elimination.  If the difference between the last and current readings is greater than the specified value and the last reading was not eliminated, the last reading is returned and the elimination flag is set.  Otherwise, the current reading is returned and the elimination flag is unset.  The algorithm will never eliminate two successive readings.
   */
 int stdev_elimination(int sensor, int current) {
-  // Holds the last value information
+  // Static variables to hold the last value information
   static int lastValue[MAX_SENSORS] = { 0 };
   static short lastEliminated[MAX_SENSORS] = { 0 };
 
@@ -144,7 +165,7 @@ int stdev_elimination(int sensor, int current) {
 }
 
 /**
-  * Creates the standard deviation thresholds.
+  * Helper function that creates the standard deviation thresholds.
   */
 void create_stdev_threshold(int *threshold, int low, int high, int value) {
   for (int i = low; i < high; i++) {
@@ -153,7 +174,7 @@ void create_stdev_threshold(int *threshold, int low, int high, int value) {
 }
 
 /**
-  * Create the standard deviation ranges.
+  * Helper function that creates the standard deviation ranges.
   */
 void create_stdev_ranges(int *threshold) {
   create_stdev_threshold(threshold, 0, 50, 8);
@@ -164,27 +185,42 @@ void create_stdev_ranges(int *threshold) {
   create_stdev_threshold(threshold, 250, 300, 30);
   create_stdev_threshold(threshold, 300, 400, 50);
 
+  // Assign the global threshold variable to the pointer parameter
   stdevElimThreshold = threshold;
 }
 
 /**
-  * Filters the data based on the selected algorithm.
+  * Runs a noise filter on the data based on the selected algorithm.
   *
   */
 int filter(struct Config *conf, int sensor, int value) {
+  // Raw data
   if (conf->noiseFilter == NF_RAW) {
     return value;
-  } else if (conf->noiseFilter == NF_MEDIAN) {
+  } 
+
+  // Moving median filter
+  else if (conf->noiseFilter == NF_MEDIAN) {
     return moving_median(sensor, value, medianValues[sensor]);
-  } else if (conf->noiseFilter == NF_EMA) {
+  }
+
+  // Exponential moving average filter 
+  else if (conf->noiseFilter == NF_EMA) {
     return ema(sensor, value);
-  } else if (conf->noiseFilter == NF_ALL) {
+  }
+
+  // EMA of the moving median of the standard deviation filter of the raw data
+  else if (conf->noiseFilter == NF_ALL) {
     return ema(sensor,
                moving_median(sensor, stdev_elimination(sensor, value),
                              medianValues[sensor]));
-  } else if (conf->noiseFilter == NF_STD) {
+  }
+  
+  // Standard deviation filter
+  else if (conf->noiseFilter == NF_STD) {
     return stdev_elimination(sensor, value);
   }
+
   // Anything else is invalid; return 0
   return 0;
 }
