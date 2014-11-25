@@ -40,7 +40,6 @@
 #define NF_ALL    3             // Noise filter number for EMA of median
 #define NF_STD    4             // Noise filter number for standard deviaiton
 
-
 int **medianValues;
 int *stdevElimThreshold;
 

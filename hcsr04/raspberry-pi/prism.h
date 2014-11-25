@@ -27,4 +27,3 @@
 void convertToPrism(int *elements, int *prism);
 
 void printPrism(int *prism);
-
