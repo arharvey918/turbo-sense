@@ -294,11 +294,11 @@ int main(int argc, char *argv[]) {
     printf("\n");
 
     // Convert the values to a prism and output
-    if (conf->pipe > 0) {
+    //if (conf->pipe > 0) {
       convertToPrism(elements, prism);
       pipe_output(pipeInfo, prism);
       sem_post(pipeSem);
-    }
+    //}
     // Wait for echos to die out
     gpioDelay(conf->delay);
 
