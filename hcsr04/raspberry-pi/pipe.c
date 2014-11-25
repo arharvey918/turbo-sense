@@ -21,7 +21,6 @@
   */
 
 #include "pipe.h"
-#include "constants.h"
 
 /**
   * Duplicate of the strdup function available in some libraries.
