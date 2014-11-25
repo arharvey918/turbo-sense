@@ -41,14 +41,6 @@ struct Config {
   int pipe;
 };
 
-/** The sensor map for the configuration file */
-int sensorMap[10] = { 24, 25, 16, 20, 21, 12, 18, 4, 17, 27 };
-
-/** The filter map for the configuration file */
-char *filterMap[5] =
-    { "Raw", "Median", "EMA", "All combined", "Standard deviation" };
-
-
 int startsWith(const char *a, const char *b);
 
 void readConfig(struct Config *conf);
