@@ -1,0 +1,48 @@
+INTRODUCTION
+------------
+This program contains an example of using named pipes (FIFOs) with Turbosense.
+Specifically, this program contains the code needed to read from the pipe. The
+sensor program sends outputs sets of six integers into the pipe. It uses
+semaphores to tell the input program when there is a set of integers available
+to read.  The input program reads this set, and then tells the sensor program
+it's ready for another set of measurements.
+
+The use of process synchronization is critical in this scenario because
+processor usage needs to be kept to a minimum due to the real-time constraints
+of the system.  If the input program looked for input from the pipe using an
+infinite while loop, precious cycles would be directed away from the sensor code
+and could result in inaccurate measurements.  When this code was originally
+written, I used this exact algorithm.  The input program took up 95% of the CPU.
+Adding in process synchronization with semaphores reduced this to 0.3% usage.
+
+REQUIREMENTS
+------------
+To run this program, you need to also be running multisense_rt, or whatever the
+main executable for Turbosense is.  This is due to the fact that multisense_rt
+creates the semaphores needed for the input pipe program to run.  If the
+multisense_rt program is run as the root user, the input pipe program also needs
+to be run as the root user due to semaphore permissions.
+
+COMPILATION AND EXECUTION
+-------------------------
+To compile this program, run 'make'.
+
+The executable file 'pipe_in' will be generated.
+
+This file can be run with or without the -p option.  When enabled, this option
+designates a file to output the pipe data to.
+
+Examples:
+ $ sudo ./pipe_in -p /var/log/reports/some_data.txt
+ $ sudo ./pipe_in 
+
+TROUBLESHOOTING
+---------------
+Q: The program hangs on "Opening semaphores".
+A: Make sure multisense_rt is also running.  Make sure you executed both
+programs as the root user.
+
+MAINTAINERS
+-----------
+Current maintainers:
+ * Avriel Harvey <arharvey@ncsu.edu>

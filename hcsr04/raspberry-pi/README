@@ -1,0 +1,42 @@
+INTRODUCTION
+------------
+Turbosense was created for the 2014 Firefighting Drone Challenge hosted by North
+Carolina State University.  Its purpose is to take concurrent measurements using
+ten HCSR-04 ultrasonic sensors and output a rectangular prism of free space
+around the drone.  For more information, please see the report in the root
+directory of this project.  
+
+
+REQUIREMENTS
+------------
+In addition to the standard C libraries, this code also depends on the pigpio
+library.  Instructions on setting up this library can be found here:
+ * http://abyz.co.uk/rpi/pigpio/
+
+It is strongly recommended that you run a real-time kernel when using this code.
+Real time kernels can significantly reduce latency in a system.
+
+
+COMPILATION AND EXECUTION
+-------------------------
+To compile this code, run 'make'.  An executable named 'multisense_rt' will be
+generated.
+
+Configuration options for the code can be found in sensor.cfg.
+
+To run the executable, you must be in the realtime group or execute the program
+as the root user:
+ $ sudo ./multisense_rt
+
+A confirmation of the options selected in sensor.cfg will appear.  You will have
+to press <ENTER> to run the program.
+
+
+TROUBLESHOOTING
+---------------
+
+
+MAINTAINERS
+-----------
+Current maintainers:
+ * Avriel Harvey <arharvey@ncsu.edu>
