@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
           cms[k] = MAX_RANGE;
         }
         // Print the measurement
-        int filtered = filter(conf, k, cms[k]);
+        int filtered = filter(conf->noiseFilter, k, cms[k]);
         elements[k] = filtered;
         printf("%d\t", filtered);
       }

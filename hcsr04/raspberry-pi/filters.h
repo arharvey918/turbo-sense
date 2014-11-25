@@ -28,7 +28,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include "constants.h"
-#include "conf_reader.h"
 
 int **medianValues;
 int *stdevElimThreshold;

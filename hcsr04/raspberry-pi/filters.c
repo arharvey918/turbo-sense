@@ -193,31 +193,31 @@ void create_stdev_ranges(int *threshold) {
   * Runs a noise filter on the data based on the selected algorithm.
   *
   */
-int filter(struct Config *conf, int sensor, int value) {
+int filter(int noiseFilter, int sensor, int value) {
   // Raw data
-  if (conf->noiseFilter == NF_RAW) {
+  if (noiseFilter == NF_RAW) {
     return value;
   } 
 
   // Moving median filter
-  else if (conf->noiseFilter == NF_MEDIAN) {
+  else if (noiseFilter == NF_MEDIAN) {
     return moving_median(sensor, value, medianValues[sensor]);
   }
 
   // Exponential moving average filter 
-  else if (conf->noiseFilter == NF_EMA) {
+  else if (noiseFilter == NF_EMA) {
     return ema(sensor, value);
   }
 
   // EMA of the moving median of the standard deviation filter of the raw data
-  else if (conf->noiseFilter == NF_ALL) {
+  else if (noiseFilter == NF_ALL) {
     return ema(sensor,
                moving_median(sensor, stdev_elimination(sensor, value),
                              medianValues[sensor]));
   }
   
   // Standard deviation filter
-  else if (conf->noiseFilter == NF_STD) {
+  else if (noiseFilter == NF_STD) {
     return stdev_elimination(sensor, value);
   }
 
