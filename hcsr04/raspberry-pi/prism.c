@@ -5,9 +5,7 @@
  * Author: Avy Harvey (c) 2014
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#define min(a, b) (((a) < (b)) ? (a) : (b))
+#include "prism.h"
 
 /**
   * Takes in a pointer to a 10-element array, and turns it into a 6-number array.

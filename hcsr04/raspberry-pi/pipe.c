@@ -1,23 +1,5 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <semaphore.h>
-
-#define PIPE_NAME "/tmp/myfifo"
-#define SENSOR_SEM "/sensorSem"
-#define PIPE_IN_SEM "/pipeInSem"
-
-/**
-  * Struct for the pipe information
-  */
-struct PipeInfo {
-  int fd;
-  char *myfifo;
-};
+#include "pipe.h"
+#include "constants.h"
 
 char *strdup2(const char *str) {
   int n = strlen(str) + 1;

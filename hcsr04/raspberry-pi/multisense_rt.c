@@ -5,38 +5,7 @@
  * Author: Avy Harvey (c) 2014
  */
 
-#include "global.h"
-#include "npipe.h"
-#include "prism.h"
-#include "filters.h"
-
-#define TRIG      23            // Trigger pin
-#define ECHO      24            // Echo pin for sensor 1
-#define ECHO1     25            // Echo pin for sensor 2
-#define ECHO2     16            // Echo pin for sensor 3
-#define ECHO3     20            // Echo pin for sensor 4
-#define ECHO4     21            // Echo pin for sensor 5
-#define ECHO5     12            // Echo pin for sensor 6
-#define ECHO6     18            // Echo pin for sensor 7
-#define ECHO7     4             // Echo pin for sensor 8
-#define ECHO8     17            // Echo pin for sensor 9
-#define ECHO9     27            // Echo pin for sensor 10
-
-/** Indicates if a pin has maxed out */
-unsigned short maxedOut;
-
-/** The system start time */
-uint32_t sysStart;
-
-/** The start time in system microseconds */
-uint32_t start[MAX_SENSORS];
-
-/** The end time in system microseconds */
-uint32_t end[MAX_SENSORS];
-
-int sensorMap[10] = { 24, 25, 16, 20, 21, 12, 18, 4, 17, 27 };
-char *filterMap[5] =
-    { "Raw", "Median", "EMA", "All combined", "Standard deviation" };
+#include "multisense_rt.h"
 
 /**
   * Determines if a string starts with another string.

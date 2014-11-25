@@ -5,8 +5,16 @@
   * Author: Avy Harvey (c) 2014
   */
 
-#include "npipe.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <semaphore.h>
 #include <errno.h>
+#include "constants.h"
 
 int fd;
 short useFile = 0;

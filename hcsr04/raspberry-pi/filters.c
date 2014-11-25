@@ -1,22 +1,4 @@
-#include "global.h"
-
-/** The array to hold values for the median filter */
-int **medianValues;
-
-/** The array to hold threshold values for the standard deviation filter */
-int *stdevElimThreshold;
-
-/**
-  * Struct to hold all of the configuration options.
-  *
-  */
-struct Config {
-  int active[MAX_SENSORS];
-  int readings;
-  int noiseFilter;
-  int delay;
-  int pipe;
-};
+#include "filters.h"
 
 /**
  * Calculates an exponential moving average
