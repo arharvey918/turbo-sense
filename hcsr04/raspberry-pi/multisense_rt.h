@@ -33,6 +33,7 @@
 #include "filters.h"
 #include "pipe.h"
 #include "prism.h"
+#include "conf_reader.h"
 
 /** Indicates if a pin has maxed out */
 unsigned short maxedOut;
@@ -45,17 +46,6 @@ uint32_t start[MAX_SENSORS];
 
 /** The end time in system microseconds */
 uint32_t end[MAX_SENSORS];
-
-/** The sensor map for the configuration file */
-int sensorMap[10] = { 24, 25, 16, 20, 21, 12, 18, 4, 17, 27 };
-
-/** The filter map for the configuration file */
-char *filterMap[5] =
-    { "Raw", "Median", "EMA", "All combined", "Standard deviation" };
-
-int startsWith(const char *a, const char *b);
-
-void readConfig(struct Config *conf);
 
 void interrupt_routine(int gpio, int level, uint32_t tick);
 

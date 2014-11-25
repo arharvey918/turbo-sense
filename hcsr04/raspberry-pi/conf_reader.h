@@ -1,5 +1,5 @@
 /**
-  * filters.h defines the noise filters for Turbosense.
+  * conf_reader.h is used to read from the sensor configuration file.
   *
   * Copyright 2014 by Avriel Harvey <arharvey@ncsu.edu>
   *
@@ -28,23 +28,27 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include "constants.h"
-#include "conf_reader.h"
 
-int **medianValues;
-int *stdevElimThreshold;
+/**
+  * Struct to hold all of the configuration options.
+  *
+  */
+struct Config {
+  int active[MAX_SENSORS];
+  int readings;
+  int noiseFilter;
+  int delay;
+  int pipe;
+};
 
-int ema(int sensor, int current);
+/** The sensor map for the configuration file */
+int sensorMap[10] = { 24, 25, 16, 20, 21, 12, 18, 4, 17, 27 };
 
-int partitions(int low, int high, int *values);
+/** The filter map for the configuration file */
+char *filterMap[5] =
+    { "Raw", "Median", "EMA", "All combined", "Standard deviation" };
 
-int selection_algorithm(int left, int right, int kth, int *values);
 
-int moving_median(int sensor, int current, int *values);
+int startsWith(const char *a, const char *b);
 
-int stdev_elimination(int sensor, int current);
-
-void create_stdev_threshold(int *threshold, int low, int high, int value);
-
-void create_stdev_ranges(int *threshold);
-
-int filter(struct Config *conf, int sensor, int value);
+void readConfig(struct Config *conf);
