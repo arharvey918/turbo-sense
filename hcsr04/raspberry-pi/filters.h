@@ -46,4 +46,4 @@ void create_stdev_threshold(int *threshold, int low, int high, int value);
 
 void create_stdev_ranges(int *threshold);
 
-int filter(struct Config *conf, int sensor, int value);
+int filter(int noiseFilter, int sensor, int value);
