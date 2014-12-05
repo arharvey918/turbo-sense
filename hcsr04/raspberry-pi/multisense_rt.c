@@ -186,6 +186,7 @@ int getCM(int sensor) {
 int main(int argc, char *argv[]) {
   // Read from the configuration file
   struct Config *conf = malloc(sizeof *conf);
+  conf->active = calloc(MAX_SENSORS, sizeof(int));
   readConfig(conf);
 
   // Active sensors
@@ -212,12 +213,9 @@ int main(int argc, char *argv[]) {
       medianValues[i] = malloc(MEDIAN_READINGS * sizeof(int));
   }
   // Set up the standard deviation filter
-  int *stdevElimThreshold = NULL;
   if (conf->noiseFilter == NF_STD || conf->noiseFilter == NF_ALL) {
-    stdevElimThreshold = malloc(MAX_RANGE * sizeof(int));
-
     // Create standard deviation thresholds
-    create_stdev_ranges(stdevElimThreshold);
+    create_stdev_ranges();
   }
   // Set up the prism for output
   int *prism = (int *)malloc(6 * sizeof(int));
@@ -286,11 +284,11 @@ int main(int argc, char *argv[]) {
     printf("\n");
 
     // Convert the values to a prism and output
-    //if (conf->pipe > 0) {
+    if (conf->pipe > 0) {
       convertToPrism(elements, prism);
       pipe_output(pipeInfo, prism);
       sem_post(pipeSem);
-    //}
+    }
     // Wait for echos to die out
     gpioDelay(conf->delay);
 
@@ -322,9 +320,6 @@ int main(int argc, char *argv[]) {
 
   if (conf->noiseFilter == NF_MEDIAN || conf->noiseFilter == NF_ALL) {
     free(medianValues);
-  }
-  if (conf->noiseFilter == NF_STD || conf->noiseFilter == NF_ALL) {
-    free(stdevElimThreshold);
   }
 
   // Reset the GPIO peripherals

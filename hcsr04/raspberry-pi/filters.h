@@ -42,8 +42,8 @@ int moving_median(int sensor, int current, int *values);
 
 int stdev_elimination(int sensor, int current);
 
-void create_stdev_threshold(int *threshold, int low, int high, int value);
+void create_stdev_threshold(int low, int high, int value);
 
-void create_stdev_ranges(int *threshold);
+void create_stdev_ranges();
 
 int filter(int noiseFilter, int sensor, int value);

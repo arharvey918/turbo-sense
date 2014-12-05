@@ -140,6 +140,7 @@ int moving_median(int sensor, int current, int *values) {
   * The standard deviation filter performs a single-point based elimination.  If the difference between the last and current readings is greater than the specified value and the last reading was not eliminated, the last reading is returned and the elimination flag is set.  Otherwise, the current reading is returned and the elimination flag is unset.  The algorithm will never eliminate two successive readings.
   */
 int stdev_elimination(int sensor, int current) {
+
   // Static variables to hold the last value information
   static int lastValue[MAX_SENSORS] = { 0 };
   static short lastEliminated[MAX_SENSORS] = { 0 };
@@ -167,26 +168,25 @@ int stdev_elimination(int sensor, int current) {
 /**
   * Helper function that creates the standard deviation thresholds.
   */
-void create_stdev_threshold(int *threshold, int low, int high, int value) {
+void create_stdev_threshold(int low, int high, int value) {
   for (int i = low; i < high; i++) {
-    threshold[i] = value;
+    stdevElimThreshold[i] = value;
   }
 }
 
 /**
   * Helper function that creates the standard deviation ranges.
   */
-void create_stdev_ranges(int *threshold) {
-  create_stdev_threshold(threshold, 0, 50, 8);
-  create_stdev_threshold(threshold, 50, 100, 10);
-  create_stdev_threshold(threshold, 100, 150, 15);
-  create_stdev_threshold(threshold, 150, 200, 18);
-  create_stdev_threshold(threshold, 200, 250, 20);
-  create_stdev_threshold(threshold, 250, 300, 30);
-  create_stdev_threshold(threshold, 300, 400, 50);
+void create_stdev_ranges() {
+  stdevElimThreshold = calloc(MAX_RANGE, sizeof(int));
 
-  // Assign the global threshold variable to the pointer parameter
-  stdevElimThreshold = threshold;
+  create_stdev_threshold(0, 50, 8);
+  create_stdev_threshold(50, 100, 10);
+  create_stdev_threshold(100, 150, 15);
+  create_stdev_threshold(150, 200, 18);
+  create_stdev_threshold(200, 250, 20);
+  create_stdev_threshold(250, 300, 30);
+  create_stdev_threshold(300, 400, 50);
 }
 
 /**

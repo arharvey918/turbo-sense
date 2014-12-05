@@ -34,7 +34,7 @@
   *
   */
 struct Config {
-  int active[MAX_SENSORS];
+  int *active;
   int readings;
   int noiseFilter;
   int delay;
